@@ -1,0 +1,712 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="VetSkin AI - Sistem cerdas pendeteksi penyakit kulit pada kucing dan anjing berbasis kecerdasan buatan.">
+    <title>VetSkin AI - Pendeteksi Penyakit Kulit Hewan Peliharaan</title>
+    
+    <!-- CSS Stylesheet -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+
+    <div class="app-container">
+        <!-- Header -->
+        <header>
+            <div class="logo-section">
+                <div class="logo-icon">
+                    <i class="fas fa-paw"></i>
+                </div>
+                <div class="logo-text">
+                    <h1>VetSkin AI</h1>
+                    <p>Sistem Deteksi Penyakit Kulit Hewan</p>
+                </div>
+            </div>
+            
+            <div class="system-status">
+                <span class="status-dot {% if is_mock %}mock{% endif %}"></span>
+                <span>
+                    Status AI: 
+                    <strong>
+                        {% if is_mock %}
+                            Mode Pengujian (Mock)
+                        {% else %}
+                            Model Keras (Aktif)
+                        {% endif %}
+                    </strong>
+                </span>
+            </div>
+        </header>
+
+        <!-- Main Workspace -->
+        <main class="main-grid">
+            
+            <!-- Left Pane: Upload & Controller -->
+            <section class="left-pane">
+                <div class="glass-card">
+                    <h2 class="card-title">
+                        <i class="fas fa-camera"></i> Analisis Citra
+                    </h2>
+                    
+                    <!-- Validation Alert Box -->
+                    <div class="alert-box danger" id="error-alert" style="display: none;">
+                        <i class="fas fa-exclamation-triangle alert-icon"></i>
+                        <div class="alert-content" id="error-message">Gambar tidak didukung.</div>
+                        <button type="button" class="alert-close" id="close-alert-btn">&times;</button>
+                    </div>
+                    
+                    <form id="upload-form" enctype="multipart/form-data">
+                        <!-- Pet Type Selector (opsional, hanya sebagai info) -->
+                        <div style="margin-bottom:0.5rem;">
+                            <span style="font-size:0.78rem;color:var(--text-secondary);letter-spacing:0.5px;text-transform:uppercase;font-weight:600;">
+                                <i class="fas fa-tag" style="margin-right:0.3rem;"></i>Jenis Hewan <span style="color:var(--text-muted);font-weight:400;">(Opsional)</span>
+                            </span>
+                        </div>
+                        <div class="pet-type-selector">
+                            <div class="pet-option">
+                                <input type="radio" id="pet-cat" name="pet_type" value="kucing" checked>
+                                <label for="pet-cat" class="pet-label">
+                                    <i class="fas fa-cat"></i>
+                                    <span>Kucing</span>
+                                </label>
+                            </div>
+                            <div class="pet-option">
+                                <input type="radio" id="pet-dog" name="pet_type" value="anjing">
+                                <label for="pet-dog" class="pet-label">
+                                    <i class="fas fa-dog"></i>
+                                    <span>Anjing</span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- Validation hint -->
+                        <div id="validation-hint" style="
+                            font-size: 0.78rem;
+                            color: var(--text-secondary);
+                            background: rgba(99,102,241,0.07);
+                            border-left: 3px solid var(--primary);
+                            border-radius: 0 6px 6px 0;
+                            padding: 0.5rem 0.75rem;
+                            margin-bottom: 0.75rem;
+                            line-height: 1.5;
+                        ">
+                            <i class="fas fa-shield-alt" style="color:var(--primary);margin-right:0.35rem;"></i>
+                            Pilihan jenis hewan hanya untuk informasi hasil. Prediksi utama berdasarkan <strong>model penyakit kulit</strong>. Screenshot, foto manusia, bangunan, atau gambar tidak relevan akan ditolak.
+                        </div>
+
+                        <!-- Drag & Drop Zone -->
+                        <div class="drop-zone" id="drop-zone">
+                            <div class="upload-icon">
+                                <i class="fas fa-cloud-upload-alt"></i>
+                            </div>
+                            <p>Tarik & Lepas gambar di sini</p>
+                            <p>atau <strong>Klik untuk memilih</strong></p>
+                            <span>Mendukung PNG, JPG, JPEG (Maks. 16MB)</span>
+                            <input type="file" id="file-input" name="file" accept="image/png, image/jpeg, image/jpg" style="display: none;">
+                        </div>
+
+                        <!-- Image Preview Container -->
+                        <div class="preview-container" id="preview-container">
+                            <img src="" alt="Preview Gambar" class="preview-image" id="preview-image">
+                            <button type="button" class="change-image-btn" id="change-image-btn">
+                                <i class="fas fa-trash-alt"></i> Hapus
+                            </button>
+                        </div>
+
+                        <!-- Submit Button -->
+                        <button type="submit" class="btn-primary" id="submit-btn" disabled>
+                            <i class="fas fa-microscope"></i> Mulai Analisis Penyakit
+                        </button>
+                    </form>
+
+                    <!-- Loading / Scanner State -->
+                    <div class="loading-wrapper" id="loading-wrapper">
+                        <div class="scanner-box">
+                            <div class="circle-loader"></div>
+                            <div class="scanner-laser"></div>
+                        </div>
+                        <div class="loading-text" id="loading-text">Menyiapkan berkas...</div>
+                        <div class="loading-subtext" id="loading-subtext">Mohon tunggu beberapa saat</div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Right Pane: Educational & Dynamic Diagnosis Results -->
+            <section class="right-pane">
+                
+                <!-- 1. Education Section (Visible by Default) -->
+                <div class="glass-card" id="education-wrapper">
+                    <h2 class="card-title">
+                        <i class="fas fa-book-medical"></i> Edukasi Penyakit Kulit Hewan
+                    </h2>
+                    <p style="color: var(--text-secondary); font-size: 0.9rem; margin-bottom: 1.5rem;">
+                        Pilih penyakit kulit di bawah ini untuk mempelajari deskripsi, gejala klinis, serta langkah penanganan awal sebelum ke dokter hewan.
+                    </p>
+                    
+                    <div class="edu-cards-grid">
+                        {% for key, info in class_info.items() %}
+                        <div class="edu-card" onclick="openEducationModal('{{ key }}')">
+                            <div class="edu-card-header">
+                                <span class="edu-card-title">{{ info.name }}</span>
+                                <span class="badge-level {% if 'Tinggi' in info.danger_level %}danger{% elif 'Sedang' in info.danger_level %}warning{% else %}success{% endif %}">
+                                    {{ info.danger_level }}
+                                </span>
+                            </div>
+                            <p>{{ info.description }}</p>
+                            <div class="edu-card-footer">
+                                <span class="read-more-btn">
+                                    Detail Selengkapnya <i class="fas fa-arrow-right"></i>
+                                </span>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <!-- 2. Result Section (Hidden by Default, Visible after analysis) -->
+                <div class="glass-card results-wrapper" id="results-wrapper">
+                    <div class="results-header">
+                        <h2 class="card-title" style="margin-bottom: 0;">
+                            <i class="fas fa-chart-pie"></i> Hasil Diagnosis AI
+                        </h2>
+                        <button class="read-more-btn" id="back-to-edu-btn" style="font-size: 0.9rem;">
+                            <i class="fas fa-chevron-left"></i> Kembali ke Edukasi
+                        </button>
+                    </div>
+
+                    <!-- Main Diagnostic Score Box -->
+                    <div class="diagnosis-score-box">
+                        <div class="score-radial">
+                            <svg class="radial-svg">
+                                <defs>
+                                    <linearGradient id="radialGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                                        <stop offset="0%" stop-color="#38BDF8" />
+                                        <stop offset="100%" stop-color="#818CF8" />
+                                    </linearGradient>
+                                </defs>
+                                <circle class="radial-bg" cx="37.5" cy="37.5" r="35" />
+                                <circle class="radial-progress" id="result-radial-bar" cx="37.5" cy="37.5" r="35" />
+                            </svg>
+                            <div class="score-text" id="result-confidence">0%</div>
+                        </div>
+                        
+                        <div class="diagnosis-text">
+                            <span class="badge-level" id="result-danger-badge">Sedang</span>
+                            <h2 id="result-disease-name" style="margin: 0.25rem 0;">Nama Penyakit</h2>
+                            <p>Spesies Terdeteksi: <strong id="result-pet-type" style="color: var(--primary);">Kucing</strong></p>
+                        </div>
+                    </div>
+
+                    <!-- Warning / Alert for Low Confidence or Ambiguity -->
+                    <div class="alert-box warning" id="result-warning-box" style="display: none; margin: 1.25rem 0 1.5rem 0;">
+                        <i class="fas fa-exclamation-triangle alert-icon"></i>
+                        <div class="alert-content">
+                            <div style="font-weight: 700; margin-bottom: 0.25rem; color: #FBBF24;">Perhatian Hasil Prediksi:</div>
+                            <ul id="result-warning-list" style="margin: 0; padding-left: 1.2rem; line-height: 1.6; color: var(--text-primary);">
+                                <!-- Injected by JS -->
+                            </ul>
+                        </div>
+                    </div>
+
+                    <!-- Info Accordion -->
+                    <div class="info-accordion" id="result-accordion-container">
+                        <!-- Deskripsi -->
+                        <div class="accordion-item active">
+                            <button class="accordion-header" onclick="toggleAccordion(this)">
+                                <span><i class="fas fa-info-circle" style="color: var(--primary); margin-right: 0.5rem;"></i> Deskripsi Penyakit</span>
+                                <i class="fas fa-chevron-down arrow-icon"></i>
+                            </button>
+                            <div class="accordion-content">
+                                <div class="accordion-content-inner">
+                                    <p id="result-description">Deskripsi tentang penyakit ini akan tampil di sini secara dinamis.</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Gejala -->
+                        <div class="accordion-item">
+                            <button class="accordion-header" onclick="toggleAccordion(this)">
+                                <span><i class="fas fa-notes-medical" style="color: var(--warning); margin-right: 0.5rem;"></i> Gejala Klinis</span>
+                                <i class="fas fa-chevron-down arrow-icon"></i>
+                            </button>
+                            <div class="accordion-content">
+                                <div class="accordion-content-inner">
+                                    <ul id="result-symptoms">
+                                        <li>Gejala klinis pertama.</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Pengobatan -->
+                        <div class="accordion-item">
+                            <button class="accordion-header" onclick="toggleAccordion(this)">
+                                <span><i class="fas fa-hand-holding-medical" style="color: var(--success); margin-right: 0.5rem;"></i> Penanganan Awal</span>
+                                <i class="fas fa-chevron-down arrow-icon"></i>
+                            </button>
+                            <div class="accordion-content">
+                                <div class="accordion-content-inner">
+                                    <ul id="result-treatment">
+                                        <li>Saran penanganan pertama.</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Breakdown chart of probabilities -->
+                    <div class="chart-section">
+                        <h3>Daftar Probabilitas Kelas</h3>
+                        <div class="bar-container" id="chart-bars-container">
+                            <!-- Rows will be injected by JavaScript -->
+                        </div>
+                    </div>
+                </div>
+
+            </section>
+        </main>
+
+        <!-- Footer -->
+        <footer>
+            <p>&copy; 2026 VetSkin AI - Universitas/Prodi Informatika. Dibuat oleh Sandi Pirdaus untuk tugas Mata Kuliah Sistem Cerdas.</p>
+        </footer>
+    </div>
+
+    <!-- Educational Modal Popup -->
+    <div class="modal-overlay" id="modal-overlay">
+        <div class="modal-card">
+            <div class="modal-header">
+                <h3 id="modal-title">Nama Penyakit</h3>
+                <button class="modal-close" onclick="closeEducationModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="modal-body-section">
+                    <span class="badge-level" id="modal-danger-badge">Sedang</span>
+                </div>
+                <div class="modal-body-section">
+                    <h4>Deskripsi Penyakit</h4>
+                    <p id="modal-description">Deskripsi panjang...</p>
+                </div>
+                <div class="modal-body-section">
+                    <h4>Gejala yang Perlu Diwaspadai</h4>
+                    <ul id="modal-symptoms">
+                        <!-- Injected -->
+                    </ul>
+                </div>
+                <div class="modal-body-section">
+                    <h4>Rekomendasi Penanganan Awal</h4>
+                    <ul id="modal-treatments">
+                        <!-- Injected -->
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- JavaScript Logic -->
+    <script>
+        // Data kelas penyakit dari backend
+        const classInfo = {{ class_info | tojson }};
+
+        // File upload & Drag/Drop Elements
+        const dropZone = document.getElementById('drop-zone');
+        const fileInput = document.getElementById('file-input');
+        const previewContainer = document.getElementById('preview-container');
+        const previewImage = document.getElementById('preview-image');
+        const changeImageBtn = document.getElementById('change-image-btn');
+        const submitBtn = document.getElementById('submit-btn');
+        const uploadForm = document.getElementById('upload-form');
+        
+        // Error Alert Elements & Helper functions
+        const errorAlert = document.getElementById('error-alert');
+        const errorMessage = document.getElementById('error-message');
+        const closeAlertBtn = document.getElementById('close-alert-btn');
+
+        function showErrorAlert(msg) {
+            errorMessage.innerText = msg;
+            errorAlert.style.display = 'flex';
+            errorAlert.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+
+        function hideErrorAlert() {
+            errorAlert.style.display = 'none';
+        }
+
+        closeAlertBtn.addEventListener('click', hideErrorAlert);
+        
+        // Loading & Results Area
+        const loadingWrapper = document.getElementById('loading-wrapper');
+        const loadingText = document.getElementById('loading-text');
+        const loadingSubtext = document.getElementById('loading-subtext');
+        const educationWrapper = document.getElementById('education-wrapper');
+        const resultsWrapper = document.getElementById('results-wrapper');
+        const backToEduBtn = document.getElementById('back-to-edu-btn');
+
+        // Modal Elements
+        const modalOverlay = document.getElementById('modal-overlay');
+        const modalTitle = document.getElementById('modal-title');
+        const modalDangerBadge = document.getElementById('modal-danger-badge');
+        const modalDescription = document.getElementById('modal-description');
+        const modalSymptoms = document.getElementById('modal-symptoms');
+        const modalTreatments = document.getElementById('modal-treatments');
+
+        // Trigger file input click
+        dropZone.addEventListener('click', () => {
+            fileInput.click();
+        });
+
+        // File input change
+        fileInput.addEventListener('change', handleFileSelect);
+
+        // Drag & drop handlers
+        ['dragenter', 'dragover'].forEach(eventName => {
+            dropZone.addEventListener(eventName, highlight, false);
+        });
+
+        ['dragleave', 'drop'].forEach(eventName => {
+            dropZone.addEventListener(eventName, unhighlight, false);
+        });
+
+        function highlight(e) {
+            e.preventDefault();
+            dropZone.classList.add('drag-over');
+        }
+
+        function unhighlight(e) {
+            e.preventDefault();
+            dropZone.classList.remove('drag-over');
+        }
+
+        dropZone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            const dt = e.dataTransfer;
+            const files = dt.files;
+            if (files.length > 0) {
+                fileInput.files = files;
+                handleFileSelect();
+            }
+        });
+
+        // Handle File Preview
+        function handleFileSelect() {
+            const file = fileInput.files[0];
+            if (file) {
+                // Check allowed extensions
+                const allowedTypes = ['image/jpeg', 'image/png', 'image/jpg'];
+                if (!allowedTypes.includes(file.type)) {
+                    showErrorAlert('Hanya diperbolehkan mengunggah file JPG, JPEG, atau PNG.');
+                    fileInput.value = '';
+                    return;
+                }
+
+                // Hide error alert on valid file selection
+                hideErrorAlert();
+
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    previewImage.src = e.target.result;
+                    dropZone.style.display = 'none';
+                    previewContainer.style.display = 'block';
+                    submitBtn.disabled = false;
+                }
+                reader.readAsDataURL(file);
+            }
+        }
+
+        // Hapus / Ganti Gambar
+        changeImageBtn.addEventListener('click', () => {
+            fileInput.value = '';
+            previewImage.src = '';
+            previewContainer.style.display = 'none';
+            dropZone.style.display = 'flex';
+            submitBtn.disabled = true;
+            hideErrorAlert();
+        });
+
+        // Loading messages simulation
+        const loadingSteps = [
+            { text: "Mengunggah gambar...", sub: "Menyimpan berkas di server" },
+            { text: "Membaca matriks pixel...", sub: "Normalisasi dimensi gambar" },
+            { text: "Melakukan komputasi AI...", sub: "Mengekstrak fitur tekstur kulit" },
+            { text: "Menghitung probabilitas...", sub: "Mencocokkan klasifikasi penyakit" }
+        ];
+
+        let loadingInterval;
+        function startLoadingAnimation() {
+            let step = 0;
+            loadingText.innerText = loadingSteps[0].text;
+            loadingSubtext.innerText = loadingSteps[0].sub;
+            
+            loadingInterval = setInterval(() => {
+                step = (step + 1) % loadingSteps.length;
+                loadingText.innerText = loadingSteps[step].text;
+                loadingSubtext.innerText = loadingSteps[step].sub;
+            }, 1000);
+        }
+
+        function stopLoadingAnimation() {
+            clearInterval(loadingInterval);
+        }
+
+        // Form Submit Ajax Analysis
+        uploadForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            
+            // Hide previous alerts
+            hideErrorAlert();
+            
+            const formData = new FormData(uploadForm);
+            
+            // Hide upload area controls & Show loading
+            dropZone.style.display = 'none';
+            previewContainer.style.display = 'none';
+            submitBtn.style.display = 'none';
+            loadingWrapper.style.display = 'block';
+            
+            startLoadingAnimation();
+
+            fetch('/predict', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                stopLoadingAnimation();
+                loadingWrapper.style.display = 'none';
+
+                const isInvalid = !data.success || data.status === 'invalid';
+
+                if (isInvalid) {
+                    // Gambar ditolak — kembalikan ke preview state, tampilkan pesan merah
+                    previewContainer.style.display = 'block';
+                    submitBtn.style.display = 'flex';
+                    submitBtn.disabled = false;
+
+                    // Pastikan hasil diagnosis TIDAK ditampilkan
+                    resultsWrapper.style.display = 'none';
+                    educationWrapper.style.display = 'block';
+
+                    showErrorAlert(data.error || 'Gambar kurang jelas. Unggah foto kulit hewan yang lebih dekat dan terang.');
+                } else {
+                    // Gambar diterima, tampilkan hasil
+                    previewContainer.style.display = 'block';
+                    submitBtn.style.display = 'flex';
+                    hideErrorAlert();
+                    displayResults(data);
+                }
+            })
+            .catch(error => {
+                stopLoadingAnimation();
+                loadingWrapper.style.display = 'none';
+                previewContainer.style.display = 'block';
+                submitBtn.style.display = 'flex';
+                console.error(error);
+                showErrorAlert('Terjadi kesalahan koneksi ke server.');
+            });
+        });
+
+        // Display results to the DOM
+        function displayResults(data) {
+            const pred = data.prediction;
+            const allPreds = data.all_predictions;
+            
+            // Toggle view panels
+            educationWrapper.style.display = 'none';
+            resultsWrapper.style.display = 'block';
+            resultsWrapper.scrollIntoView({ behavior: 'smooth' });
+
+            // Set Title & Confidence
+            document.getElementById('result-confidence').innerText = pred.confidence + '%';
+            document.getElementById('result-pet-type').innerText = data.pet_type.charAt(0).toUpperCase() + data.pet_type.slice(1);
+            
+            const warningBox = document.getElementById('result-warning-box');
+            const warningList = document.getElementById('result-warning-list');
+            const accordionContainer = document.getElementById('result-accordion-container');
+            const dangerBadge = document.getElementById('result-danger-badge');
+
+            // Reset UI states
+            warningBox.style.display = 'none';
+            warningList.innerHTML = '';
+            accordionContainer.style.display = 'block';
+
+            if (data.is_low_confidence || data.is_ambiguous) {
+                // Set status text
+                document.getElementById('result-disease-name').innerText = "Perlu pemeriksaan lebih lanjut";
+                
+                // Set badge status
+                dangerBadge.innerText = "Peringatan";
+                dangerBadge.className = 'badge-level danger'; // Red background warning state
+
+                // Hide detailed diagnosis accordions
+                accordionContainer.style.display = 'none';
+
+                // Display specific warning messages
+                warningBox.style.display = 'flex'; // alert-box uses display flex
+                if (data.warning_messages && data.warning_messages.length > 0) {
+                    data.warning_messages.forEach(msg => {
+                        const li = document.createElement('li');
+                        li.innerText = msg;
+                        warningList.appendChild(li);
+                    });
+                }
+            } else {
+                // Normal diagnosis display
+                document.getElementById('result-disease-name').innerText = pred.name;
+                
+                dangerBadge.innerText = pred.danger_level;
+                dangerBadge.className = 'badge-level'; // reset
+                if (pred.danger_level.includes('Tinggi')) {
+                    dangerBadge.classList.add('danger');
+                } else if (pred.danger_level.includes('Sedang')) {
+                    dangerBadge.classList.add('warning');
+                } else {
+                    dangerBadge.classList.add('success');
+                }
+
+                // Populate Details
+                document.getElementById('result-description').innerText = pred.description;
+                
+                // Symptoms list
+                const symptomsList = document.getElementById('result-symptoms');
+                symptomsList.innerHTML = '';
+                pred.symptoms.forEach(sym => {
+                    const li = document.createElement('li');
+                    li.innerText = sym;
+                    symptomsList.appendChild(li);
+                });
+
+                // Treatment list
+                const treatmentList = document.getElementById('result-treatment');
+                treatmentList.innerHTML = '';
+                pred.treatment.forEach(treat => {
+                    const li = document.createElement('li');
+                    li.innerText = treat;
+                    treatmentList.appendChild(li);
+                });
+            }
+
+            // Radial progress animation
+            const progressCircle = document.getElementById('result-radial-bar');
+            // Keliling lingkaran r=35 adalah 2 * PI * 35 ~ 220
+            const offset = 220 - (220 * pred.confidence / 100);
+            progressCircle.style.strokeDashoffset = offset;
+
+            // Render chart bars
+            const barsContainer = document.getElementById('chart-bars-container');
+            barsContainer.innerHTML = '';
+            
+            // Find highest confidence to add special styling
+            const highestConf = Math.max(...allPreds.map(p => p.confidence));
+
+            allPreds.forEach(p => {
+                const row = document.createElement('div');
+                row.className = 'bar-row';
+                
+                const label = document.createElement('div');
+                label.className = 'bar-label';
+                label.innerText = p.name;
+                
+                const track = document.createElement('div');
+                track.className = 'bar-track';
+                
+                const fill = document.createElement('div');
+                fill.className = 'bar-fill';
+                if (p.confidence === highestConf) {
+                    fill.classList.add('highest');
+                }
+                // Delay width transition a bit for visualization animation effect
+                setTimeout(() => {
+                    fill.style.width = p.confidence + '%';
+                }, 100);
+                
+                track.appendChild(fill);
+                
+                const value = document.createElement('div');
+                value.className = 'bar-value';
+                value.innerText = p.confidence + '%';
+                
+                row.appendChild(label);
+                row.appendChild(track);
+                row.appendChild(value);
+                
+                barsContainer.appendChild(row);
+            });
+        }
+
+        // Toggle back to Education panel
+        backToEduBtn.addEventListener('click', () => {
+            resultsWrapper.style.display = 'none';
+            educationWrapper.style.display = 'block';
+            educationWrapper.scrollIntoView({ behavior: 'smooth' });
+        });
+
+        // Accordion functionality
+        function toggleAccordion(button) {
+            const item = button.parentNode;
+            const isActive = item.classList.contains('active');
+            
+            // Close other items
+            document.querySelectorAll('.accordion-item').forEach(i => {
+                i.classList.remove('active');
+            });
+            
+            if (!isActive) {
+                item.classList.add('active');
+            }
+        }
+
+        // Education Modal functions
+        function openEducationModal(key) {
+            const info = classInfo[key];
+            if (!info) return;
+
+            modalTitle.innerText = info.name;
+            modalDescription.innerText = info.description;
+            
+            // Danger Badge
+            modalDangerBadge.innerText = info.danger_level;
+            modalDangerBadge.className = 'badge-level';
+            if (info.danger_level.includes('Tinggi')) {
+                modalDangerBadge.classList.add('danger');
+            } else if (info.danger_level.includes('Sedang')) {
+                modalDangerBadge.classList.add('warning');
+            } else {
+                modalDangerBadge.classList.add('success');
+            }
+
+            // Symptoms
+            modalSymptoms.innerHTML = '';
+            info.symptoms.forEach(s => {
+                const li = document.createElement('li');
+                li.innerText = s;
+                modalSymptoms.appendChild(li);
+            });
+
+            // Treatments
+            modalTreatments.innerHTML = '';
+            info.treatment.forEach(t => {
+                const li = document.createElement('li');
+                li.innerText = t;
+                modalTreatments.appendChild(li);
+            });
+
+            modalOverlay.classList.add('active');
+        }
+
+        function closeEducationModal() {
+            modalOverlay.classList.remove('active');
+        }
+
+        // Close modal when clicking outside modal-card
+        modalOverlay.addEventListener('click', (e) => {
+            if (e.target === modalOverlay) {
+                closeEducationModal();
+            }
+        });
+    </script>
+</body>
+</html>

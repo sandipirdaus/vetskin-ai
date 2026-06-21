@@ -1,0 +1,104 @@
+{
+  "Dermatitis": {
+    "name": "Dermatitis",
+    "description": "Peradangan pada kulit hewan yang dapat disebabkan oleh alergi, iritasi, infeksi, atau faktor lingkungan. Kondisi ini biasanya ditandai dengan kulit kemerahan, gatal, dan perubahan tekstur kulit.",
+    "symptoms": [
+      "Kulit tampak merah atau meradang.",
+      "Hewan sering menggaruk atau menjilat area tertentu.",
+      "Muncul ruam, luka kecil, atau kulit mengelupas.",
+      "Bulu di sekitar area kulit dapat rontok."
+    ],
+    "treatment": [
+      "Bersihkan area kulit dengan lembut dan jaga agar tetap kering.",
+      "Hindari penggunaan obat manusia tanpa arahan dokter hewan.",
+      "Kurangi paparan pemicu alergi atau iritasi jika diketahui.",
+      "Konsultasikan ke dokter hewan untuk pemeriksaan dan penanganan yang tepat."
+    ],
+    "danger_level": "Sedang"
+  },
+  "Fungal_infections": {
+    "name": "Fungal Infections",
+    "description": "Infeksi kulit yang disebabkan oleh pertumbuhan jamur pada permukaan kulit atau bulu hewan. Infeksi jamur dapat menyebabkan bercak kulit, kerontokan bulu, dan iritasi.",
+    "symptoms": [
+      "Kerontokan bulu pada area tertentu.",
+      "Muncul bercak melingkar atau bersisik.",
+      "Kulit tampak kemerahan, kering, atau berkerak.",
+      "Hewan terlihat sering menggaruk area yang terinfeksi."
+    ],
+    "treatment": [
+      "Pisahkan hewan sementara jika dicurigai menular.",
+      "Jaga kebersihan kandang, alas tidur, dan peralatan hewan.",
+      "Gunakan sampo atau obat antijamur sesuai rekomendasi dokter hewan.",
+      "Segera konsultasikan ke dokter hewan untuk memastikan jenis infeksi."
+    ],
+    "danger_level": "Sedang (Berpotensi Menular)"
+  },
+  "Healthy": {
+    "name": "Healthy",
+    "description": "Kondisi kulit dan bulu hewan tampak normal tanpa tanda penyakit kulit yang jelas. Kulit terlihat bersih, tidak meradang, dan tidak terdapat luka atau bercak mencurigakan.",
+    "symptoms": [
+      "Kulit tampak bersih dan tidak kemerahan.",
+      "Bulu terlihat normal dan tidak rontok berlebihan.",
+      "Tidak ada luka, kerak, ruam, atau bercak mencurigakan.",
+      "Hewan tidak menunjukkan perilaku menggaruk berlebihan."
+    ],
+    "treatment": [
+      "Pertahankan kebersihan tubuh dan lingkungan hewan.",
+      "Lakukan pemeriksaan kulit secara rutin.",
+      "Berikan nutrisi yang baik untuk menjaga kesehatan kulit dan bulu.",
+      "Tetap konsultasikan ke dokter hewan jika muncul perubahan pada kulit."
+    ],
+    "danger_level": "Rendah"
+  },
+  "Hypersensitivity": {
+    "name": "Hypersensitivity",
+    "description": "Reaksi sensitivitas atau alergi pada kulit hewan yang dapat dipicu oleh makanan, gigitan serangga, lingkungan, atau bahan tertentu. Kondisi ini dapat menyebabkan rasa gatal dan iritasi.",
+    "symptoms": [
+      "Gatal berlebihan pada area tertentu.",
+      "Kulit kemerahan atau muncul ruam.",
+      "Hewan sering menjilat, menggigit, atau menggaruk tubuhnya.",
+      "Dapat terjadi kerontokan bulu akibat garukan berulang."
+    ],
+    "treatment": [
+      "Identifikasi dan hindari kemungkinan pemicu alergi.",
+      "Jaga kebersihan lingkungan dan tempat tidur hewan.",
+      "Jangan memberikan obat alergi manusia tanpa arahan dokter hewan.",
+      "Konsultasikan ke dokter hewan untuk pemeriksaan alergi dan terapi yang sesuai."
+    ],
+    "danger_level": "Sedang"
+  },
+  "demodicosis": {
+    "name": "Demodicosis",
+    "description": "Penyakit kulit yang disebabkan oleh pertumbuhan berlebih tungau Demodex pada folikel rambut. Kondisi ini sering muncul saat daya tahan tubuh hewan menurun.",
+    "symptoms": [
+      "Kerontokan bulu lokal atau menyebar.",
+      "Kulit tampak kemerahan, bersisik, atau berkerak.",
+      "Area yang sering terkena antara lain wajah, sekitar mata, kaki, atau tubuh.",
+      "Pada kasus tertentu dapat disertai infeksi sekunder."
+    ],
+    "treatment": [
+      "Segera konsultasikan ke dokter hewan untuk diagnosis pasti.",
+      "Gunakan obat antiparasit sesuai resep dokter hewan.",
+      "Jaga kebersihan kulit dan lingkungan hewan.",
+      "Perbaiki nutrisi dan kondisi kesehatan umum hewan."
+    ],
+    "danger_level": "Sedang"
+  },
+  "ringworm": {
+    "name": "Ringworm",
+    "description": "Infeksi jamur pada kulit yang dapat menyerang permukaan kulit, bulu, dan kuku hewan. Ringworm dapat menular ke hewan lain dan juga manusia.",
+    "symptoms": [
+      "Kerontokan bulu berbentuk lingkaran.",
+      "Kulit bersisik, kemerahan, atau berkerak.",
+      "Area kulit tampak kering dan iritasi.",
+      "Gatal ringan hingga sedang pada area terinfeksi."
+    ],
+    "treatment": [
+      "Pisahkan hewan yang terinfeksi untuk mencegah penularan.",
+      "Bersihkan kandang, alas tidur, dan peralatan hewan secara rutin.",
+      "Gunakan obat atau sampo antijamur sesuai arahan dokter hewan.",
+      "Segera konsultasikan ke dokter hewan untuk penanganan lebih lanjut."
+    ],
+    "danger_level": "Sedang (Menular)"
+  }
+}
