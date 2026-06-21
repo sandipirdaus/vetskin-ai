@@ -1,4 +1,6 @@
-flask
+Flask
+gunicorn
 tensorflow
-pillow
 numpy
+Pillow
+opencv-python-headless
