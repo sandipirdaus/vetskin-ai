@@ -260,4 +260,5 @@ def predict():
 # Mock mode telah dihapus. Aplikasi selalu menggunakan model TensorFlow asli.
 
 if __name__ == '__main__':
-    app.run(debug=True, host='0.0.0.0', port=5005)
+    port = int(os.environ.get("PORT", 7860))
+    app.run(host="0.0.0.0", port=port)
